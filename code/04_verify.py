@@ -78,6 +78,15 @@ def check_numbers() -> None:
                       *[warm[warm.is_mixed == v].event for v in (0, 1)])
     check("log-rank p-value", round(lr.p_value, 3), 0.017, tol=0.005)
 
+    # the two supervised vignettes
+    acc = P.classification_accuracy(sample)
+    ok = acc >= 0.93
+    print(f"{PASS if ok else FAIL}  cell-type classifier (16-marker CV): {acc:.3f}")
+    if not ok:
+        failures.append("classification accuracy")
+    _, _, _, r2 = P.til_regression(xy, pat)
+    check("TIL regression R^2", round(r2, 2), 0.66, tol=0.02)
+
     # the deliberate null: composition tells us nothing
     allc = pd.read_csv(P.PROC / "cells_xy.csv.gz",
                        usecols=["SampleID", "celltype"])
@@ -111,11 +120,12 @@ def check_data_files() -> None:
 
 def check_figures() -> None:
     print("\nslide figures")
-    expected = ["two_patients", "cluster_heatmap", "pca", "umap",
-                "km_composition_null", "km_mixing", "mixing_dotplot",
-                "watershed_easy", "watershed_hard", "mask_vs_phenotype",
-                "neuron", "next_token", "tokens", "temperature_mechanism",
-                "temperature_effect", "attention"]
+    expected = ["ml_grid", "classification", "regression", "two_patients",
+                "cluster_heatmap", "pca", "umap", "km_composition_null",
+                "km_mixing", "mixing_dotplot", "watershed_easy",
+                "watershed_hard", "mask_vs_phenotype", "neuron", "next_token",
+                "tokens", "temperature_mechanism", "temperature_effect",
+                "attention"]
     missing = [n for n in expected if not (P.FIGS / f"{n}.png").exists()]
     if missing:
         print(f"{FAIL}  missing: {', '.join(missing)}")

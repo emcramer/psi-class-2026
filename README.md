@@ -3,9 +3,13 @@
 A ~60 minute segment for high school students, built on the Keren et al. 2018
 *Cell* MIBI-TOF triple-negative breast cancer dataset.
 
-Students cluster 20,000 real cells, discover that cell *composition* predicts
-nothing about survival, then compute a spatial statistic that does — reproducing
-a published result. Then they take a language model apart.
+Students meet the **four main kinds of machine learning** — classification,
+regression, clustering, dimensionality reduction — by using each one on 20,000
+real cells. As a capstone they invent a spatial feature that predicts survival,
+reproducing a published result. Then they take a language model apart.
+
+The notebooks are **playable demos, not fill-in exercises**: every cell runs
+as-is, with 🎛️ *Try it* boxes inviting students to change a number and rerun.
 
 ## What's here
 
@@ -73,6 +77,9 @@ everything else runs in the miniforge base environment.
 
 | | |
 |---|---|
+| Classification — cell type from 16 markers | **95%** (16-marker RF), 89% (2 markers) |
+| Regression — immune fraction → TIL score | **R² = 0.66**, n = 25 |
+| Clustering — k-means, no labels | recovers T / B / neutrophil / tumor cells |
 | "Cold" tumors (<250 immune cells) | recovers exactly the paper's 6 |
 | Mixing score vs published labels | **33 / 33 correct** |
 | Mixed vs walled off → survival | **HR 5.21, p = 0.032** (paper: 4.97, p = 0.03) |

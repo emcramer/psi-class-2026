@@ -145,6 +145,35 @@ def load() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     return sample, xy, pat
 
 
+def immune_fraction(xy: pd.DataFrame) -> pd.Series:
+    """Fraction of each patient's cells that are immune cells."""
+    return (xy.assign(_imm=(xy["coarse"] == "immune").astype(int))
+              .groupby("SampleID")["_imm"].mean().rename("immune_frac"))
+
+
+def classification_accuracy(sample: pd.DataFrame) -> float:
+    """3-fold CV accuracy of a random forest predicting coarse cell type
+    from the 16 markers. This is the SUPERVISED counterpart to the k-means
+    clustering vignette: same data, same goal (label cells), but learning
+    from labels instead of discovering groups."""
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import cross_val_score
+    from sklearn.preprocessing import StandardScaler
+    X = StandardScaler().fit_transform(sample[MARKERS])
+    clf = RandomForestClassifier(120, random_state=0, n_jobs=-1)
+    return float(cross_val_score(clf, X, sample["coarse"], cv=3).mean())
+
+
+def til_regression(xy: pd.DataFrame, pat: pd.DataFrame):
+    """Predict the pathologist's by-eye TIL score from the fraction of immune
+    cells the computer counted. Returns (dataframe, slope, intercept, r2)."""
+    frac = immune_fraction(xy)
+    d = pat.merge(frac, on="SampleID").dropna(subset=["TIL_score"])
+    slope, intercept = np.polyfit(d["immune_frac"], d["TIL_score"], 1)
+    r = np.corrcoef(d["immune_frac"], d["TIL_score"])[0, 1]
+    return d, slope, intercept, r ** 2
+
+
 def km_curve(time: np.ndarray, event: np.ndarray):
     """Kaplan-Meier step function. Returns (times, survival) including t=0."""
     order = np.argsort(time)

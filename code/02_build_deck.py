@@ -32,167 +32,144 @@ FONT = "Helvetica Neue"
 #   kind: "title" | "section" | "figure" | "bullets" | "do"
 DECK = [
     ("Machine Learning & Language Models", None,
-     ["Two very different tools.",
-      "Today we use both on a real cancer dataset."],
-     "Introduce yourself in 20 seconds. Set the frame: these are two separate "
-     "tools for two separate jobs, not versions of each other. We are going to "
-     "USE the first one on real data from real patients, and then take the "
-     "second one apart to see what is inside.",
+     ["Teaching computers to find patterns —",
+      "then taking a language model apart."],
+     "Introduce yourself in 20 seconds. Frame the hour: first we meet the four "
+     "main kinds of machine learning by using them on real cancer data, then "
+     "we look at how a language model works. Two different tools.",
      "title"),
 
-    ("One of these women survived. One did not.", "two_patients",
-     [],
-     "DO NOT explain the picture yet. Ask them to guess which is which, and "
-     "why. Take 2-3 guesses out loud. Most will guess based on the amount of "
-     "orange -- point out that both are ~50% immune cells, it is printed right "
-     "there. Then say: hold that thought, we will come back to this in 20 "
-     "minutes and you will be able to answer it with code you wrote.",
-     "figure"),
-
     ("What is machine learning?", None,
-     ["Finding patterns in data — without being told the rule.",
+     ["Finding patterns in data — without being handed the rule.",
       "",
       "You never wrote down 'a cat has pointy ears and whiskers.'",
-      "You learned what a cat is by seeing lots of cats."
-      ],
-     "Keep this short. The key move is 'nobody wrote the rule down.' Ask: how "
-     "would you write instructions for recognizing your friend's face? You "
-     "can't. But you can show a computer 10,000 examples.",
+      "You saw a few thousand cats.",
+      "",
+      "The computer learns the same way: from examples."],
+     "Keep this short. The one idea: nobody writes the rule down. Ask how you'd "
+     "write instructions to recognize a friend's face -- you can't, but you can "
+     "show 10,000 examples. That's ML.",
      "bullets"),
 
-    ("Two jobs, two tools", None,
-     ["CLASSIFICATION — you have the answers, you want to predict new ones.",
-      "     spam / not spam · is this mole dangerous?",
-      "",
-      "CLUSTERING — nobody has the answers. Find the groups.",
-      "     what kinds of customers does this shop have?",
-      "",
-      "Today: mostly clustering. Nobody labeled 200,000 cells by hand."],
-     "This is the one slide of vocabulary that matters. Classification = you "
-     "have a teacher. Clustering = no teacher, find the structure yourself. "
-     "Ask for one more example of each from the room before moving on.",
-     "bullets"),
+    ("Four kinds of machine learning", "ml_grid",
+     [],
+     "THE BACKBONE SLIDE. Walk the 2x2 slowly. Top row SUPERVISED = you have "
+     "the answers and teach the computer to copy them; splits into predicting a "
+     "CATEGORY (classification) or a NUMBER (regression). Bottom row "
+     "UNSUPERVISED = no answers, find structure yourself; either group things "
+     "(clustering) or simplify them (dimensionality reduction). We'll do one "
+     "example of each, all on the same tumor data. Come back to this grid "
+     "between vignettes so they never lose the map.",
+     "figure"),
 
     ("Where the data comes from", "mask_vs_phenotype",
      [],
      "41 women with triple-negative breast cancer -- the aggressive kind with "
-     "no targeted treatment. A machine measured 36 proteins in every cell of a "
-     "tumor sample. ~200,000 cells. Step 1: outline every cell. Step 2: work "
-     "out what each one is. We come back to HOW in part two.",
+     "no targeted treatment. A machine measured 36 proteins in every cell. "
+     "~200,000 cells. Every cell was outlined and labeled. That labeled table "
+     "is what feeds all four kinds of ML.",
      "figure"),
 
     ("Notebook 1 — open it now", None,
-     ["Clustering 20,000 cells",
+     ["The four kinds of machine learning,",
+      "on 20,000 real tumor cells.",
       "",
-      "You will find cell types that nobody told the computer about."],
-     "Get everyone into notebook 1. Wait for the slowest person. Run the setup "
-     "cell together. Then let them work through Part 1 while you circulate.",
+      "Everything runs as-is. Look for the 🎛️ Try it boxes."],
+     "Get everyone into notebook 1. Wait for the slowest laptop. Run the setup "
+     "and load cells together. Emphasize: nothing is broken or blank -- they "
+     "run cells and then tinker with the knobs. You'll drive the concepts from "
+     "the slides while they follow along and play.",
      "do"),
 
-    ("We found six groups", "cluster_heatmap",
+    ("① Classification — predict a category", "classification",
      [],
-     "Let them stare at this and guess before revealing. The wins: cluster "
-     "with MPO only = neutrophils. CD20 = B cells. CD3/CD4/CD8 = T cells. "
-     "Keratins = tumor. Ask 'which row is the T cells?' and wait. Someone "
-     "will get it, and that moment is the point of the whole hour.",
+     "SUPERVISED. We HAVE labels (a biologist named every cell), so we teach "
+     "the computer to copy them, then test on cells it never saw: ~90% right. "
+     "The picture is the rule it learned on two markers -- land in the blue "
+     "zone, it calls you a tumor cell. That shaded boundary IS the classifier. "
+     "The full 16-marker model hits 95%.",
      "figure"),
 
-    ("Squishing 16 measurements into 2 dimensions", "pca",
+    ("② Regression — predict a number", "regression",
      [],
-     "Each dot is one cell. PCA finds the two directions that spread the data "
-     "out the most. The colors were NOT used to build the picture -- they are "
-     "painted on afterwards. The structure was already there.",
+     "Still supervised, but the answer is a NUMBER now, not a category. A "
+     "pathologist eyeballs each tumor and gives an immune score 1-4. Can the "
+     "computer's automatic immune-cell count predict that human score? The "
+     "fitted line says yes, about two-thirds of the way (R^2 = 0.66). "
+     "Regression = fit a line, read off a number. This is also the bridge from "
+     "images to the clinic.",
      "figure"),
 
-    ("Same idea, fancier math", "umap",
+    ("③ Clustering — find groups with no answer key", "cluster_heatmap",
      [],
-     "OPTIONAL / CUT FIRST. UMAP is what you will see in real papers. Same "
-     "job as PCA, better at keeping neighbors together. Mention the name so "
-     "they recognize it later, then move on.",
+     "Now HIDE the labels -- unsupervised. k-means sorted 20,000 cells into 6 "
+     "piles knowing nothing. Let them read the heatmap and guess before the "
+     "reveal: MPO = neutrophils, CD20 = B cells, CD3/CD4/CD8 = T cells, "
+     "keratins = tumor. The punchline: classification COPIES labels you have; "
+     "clustering DISCOVERS groups you don't. Same data, opposite philosophy.",
      "figure"),
 
-    ("So: does WHICH cells you have predict survival?", "km_composition_null",
+    ("④ Dimensionality reduction — draw a map", "pca",
      [],
-     "This is a Kaplan-Meier curve -- the line drops every time a patient "
-     "dies. Two groups, found by clustering patients on their cell makeup. "
-     "The lines sit on top of each other. p = 0.18, which means 'this could "
-     "easily be chance.' Say plainly: this is a real negative result and it is "
-     "not a failure. It is a clue.",
+     "Still unsupervised. Each cell is 16 numbers; PCA squashes them to 2 so "
+     "every cell becomes a dot on a map. Tumor and immune land in different "
+     "regions -- and the colors were painted on AFTER, never used to build the "
+     "map. The structure was already in the numbers. (UMAP is the fancier "
+     "version they'll see in papers.)",
      "figure"),
 
-    ("Back to these two", "two_patients",
+    ("⑤ Capstone: which cells? Doesn't matter.", "km_composition_null",
      [],
-     "NOW answer the opening question. Both ~50% immune. Left: immune cells "
-     "in their own territory, walled off. Right: immune cells mixed all "
-     "through the tumor. Same ingredients, different architecture. Ask: how "
-     "would you turn that difference into a NUMBER?",
+     "Now we USE the toolkit on the real question. First an honest failure. "
+     "Cluster patients by WHICH cells they have, then look at survival: the "
+     "lines sit on top of each other, p = 0.18. Composition tells us nothing. "
+     "Say plainly -- a negative result is a real result, and it's a clue.",
      "figure"),
 
-    ("Turning a picture into one number", None,
-     ["For every patient:",
-      "",
-      "mixing score  =    immune cells touching tumor cells",
-      "                        ─────────────────────────────",
-      "                        immune cells touching each other",
-      "",
-      "Low = walled off.        High = all mixed together."],
-     "Let them propose ideas first -- some will invent this themselves. Then "
-     "show it. It is a ratio, so it does not care how many immune cells there "
-     "are, only how they are arranged. That is exactly what we need.",
-     "bullets"),
-
-    ("Notebook 1 — Part 4", None,
-     ["Write the mixing score yourself.",
-      "",
-      "Then compare it to what the scientists published."],
-     "This is the centerpiece. ~6 lines with a KD-tree. Circulate. Expect "
-     "questions about query_pairs -- explain it as 'give me every pair of "
-     "cells within 30 pixels'.",
-     "do"),
-
-    ("Your score vs. the published labels", "mixing_dotplot",
+    ("Same amount of immune cells, different layout", "two_patients",
      [],
-     "33 patients, 33 correct. A Stanford lab published these labels in Cell, "
-     "one of the top journals in biology. The students just reproduced them "
-     "from scratch. Say that out loud -- they will not realize it is "
-     "impressive unless you tell them.",
+     "Both patients are ~50% immune -- printed right there. But left, the "
+     "immune cells are walled off in their own territory; right, they're mixed "
+     "through the tumor. Composition can't see this. Ask: how would you turn "
+     "'walled off vs mixed' into a single number?",
      "figure"),
 
     ("Where the cells are — that DOES predict survival", "km_mixing",
      [],
-     "THE PAYOFF SLIDE. Same patients, same math, one different question. "
-     "5.2x the risk of dying. p = 0.032. Which cells you have: nothing. Where "
-     "they are: everything. Pause here. Let it land before moving on.",
+     "THE PAYOFF. We invented a feature -- the mixing score -- and fed it the "
+     "same survival data. 5.2x the risk of dying, p = 0.032, and it matches the "
+     "paper's published labels 33/33. Which cells you have: nothing. Where they "
+     "are: everything. The four kinds are the tools; the art is feeding them "
+     "the right number. Pause here.",
      "figure"),
 
     ("Part 2 — How do you get numbers out of a picture?", None,
      ["Every number we just used started as a photograph."],
-     "Transition. Everything so far assumed a tidy table. Somebody had to make "
-     "that table.",
+     "Transition. All four vignettes assumed a tidy table. Somebody had to "
+     "build that table from raw images.",
      "section"),
 
-    ("Notebook 2 — follow along", None,
+    ("Notebook 2 — run it yourself", None,
      ["Threshold → find centers → flood outwards",
       "",
       "Three lines of math. No AI at all."],
-     "Instructor-driven -- do not make them type this. Project it, run it, "
-     "narrate. Threshold: bright = cell. Distance transform: find the middle "
-     "of each blob. Watershed: pour water from each center until floods meet.",
+     "They can run this one too. Threshold: bright = cell. Distance transform: "
+     "find each blob's middle. Watershed: pour water from each center until the "
+     "floods meet. Classic image processing, no neural net.",
      "do"),
 
-    ("On easy cells, it works...better", "watershed_easy",
+    ("On easy cells, it works", "watershed_easy",
      [],
      "158 cells really there, ~177 found, 72% of outlines right. Old-fashioned "
-     "math, no neural network, works fine. Now watch what happens on the real "
-     "thing.",
+     "math, no AI, works fine on tidy cells. Now the real thing.",
      "figure"),
 
     ("On real tissue, it falls apart", "watershed_hard",
      [],
-     "Same code, real densely-packed tumor. Look at the big merged blobs -- "
-     "it glued neighboring cells together. Got roughly the right COUNT, but "
-     "the SHAPES are wrong, and every protein measurement from a wrong shape "
-     "is also wrong. THIS is why the next slide exists.",
+     "Same code, real densely-packed tumor. Look at the big merged blobs -- it "
+     "glued neighbors together. Roughly the right COUNT, but the SHAPES are "
+     "wrong, and every measurement from a wrong shape is wrong too. THIS earns "
+     "the next slide.",
      "figure"),
 
     ("So they used a neural network", None,
@@ -200,100 +177,92 @@ DECK = [
       "",
       "It learned what a cell boundary looks like.",
       "",
-      "Every one of the 200,000 outlines you used today came from that model.",
+      "Every one of the 200,000 outlines you used came from that model.",
       "",
-      "Same idea as: face unlock · reading a cheque · tumor outlines for radiotherapy"],
-     "Land the point: we did not start with deep learning, we EARNED it. The "
-     "classical method broke, so they needed something that learns from "
-     "examples. Give one or two familiar examples and move on -- do not go "
-     "down a CNN rabbit hole.",
+      "Same idea as: face unlock · reading a check · tumor outlines for radiotherapy"],
+     "Land it: we didn't start with deep learning, we EARNED it -- the simple "
+     "method broke, so they needed something that learns boundaries from "
+     "examples. That is itself supervised classification, run once per pixel. "
+     "Give a familiar example or two and move on; don't rabbit-hole on CNNs.",
      "bullets"),
 
     ("Part 3 — What is actually inside ChatGPT?", None,
-     ["Different tool. Different job. Let's take one apart."],
-     "Hard reset. Say explicitly: this is NOT the same tool as the first half. "
-     "We are switching topics, not scaling up.",
+     ["A different tool. Let's take one apart."],
+     "Hard reset. This is a separate tool from the ML we just did, not a bigger "
+     "version of it. Switching topics.",
      "section"),
 
     ("It starts with one neuron", "neuron",
      [],
-     "Multiply each input by a weight, add them up, squash to a yes/no. That "
-     "is the entire unit. In notebook 3 they train one in ~10 lines to spot "
-     "immune cells, and it discovers on its own that CD45 means immune "
-     "(positive weight) and keratin means not immune (negative).",
+     "Multiply each input by a weight, add them up, squash to a yes/no. That's "
+     "the whole unit. In notebook 3 they train one in ~10 lines to spot immune "
+     "cells -- and notice, that's a tiny CLASSIFIER, the same job as vignette "
+     "1. A language model is this, ~100 billion times over.",
      "figure"),
 
     ("A model cannot read letters", "tokens",
      [],
-     "Text gets chopped into tokens, each token becomes a number. Have them "
-     "run their OWN NAME through it in the notebook -- this always gets a "
-     "reaction. Note that 1847362 becomes 18/47/362, which is genuinely why "
-     "these models are bad at arithmetic and at counting letters in a word.",
+     "Text is chopped into tokens, each token becomes a number. Have them run "
+     "their OWN NAME through it in the notebook -- always gets a reaction. Note "
+     "1847362 becomes 18/47/362, which is genuinely why these models fumble "
+     "arithmetic and letter-counting.",
      "figure"),
 
     ("All it does is guess the next word", "next_token",
      [],
-     "THE key slide of part 3. Real GPT-2, running on their laptop. 94.6% sure "
-     "the next word is 'cancer'. To write a sentence: pick one, stick it on "
-     "the end, ask again. That is all writing is, for a language model. Then "
-     "let them try their own prompt.",
+     "THE key LLM slide. Real GPT-2 on their laptop: 94.6% sure the next word "
+     "is 'cancer'. To write, it picks one, appends it, asks again. That's all "
+     "writing is for a language model. (Notice: guess the next word out of "
+     "50,000 options is just... classification with 50,000 categories.)",
      "figure"),
 
-    ("Temperature changes prediction weights", "temperature_mechanism",
+    ("Temperature: it re-weights, it does not delete", "temperature_mechanism",
      [],
-     "ANSWER THE QUESTION THEY WILL ASK. Temperature is not a cutoff. The "
-     "model's raw scores get DIVIDED by the temperature before being turned "
-     "into probabilities. Divide by something small (<1) and the gaps get "
-     "bigger, so the favorite wins even more often -- 'man' goes 45% -> 77%. "
-     "Divide by something big (>1) and the gaps shrink, so long shots get a "
-     "real chance -- 'man' drops to 28%. Same seven words on screen the whole "
-     "time; nothing is ever removed. If someone asks what DOES remove words, "
-     "that is top-k / top-p: keep the best few, throw the rest away. Different "
-     "knob.",
+     "The knob students always ask about. The raw scores get DIVIDED by the "
+     "temperature before becoming probabilities. Small (<1): gaps grow, the "
+     "favorite wins more -- 'man' 45% -> 77%. Big (>1): gaps shrink, long shots "
+     "get a chance -- down to 28%. Same seven words the whole time; nothing is "
+     "removed. (What DOES remove words is top-k / top-p -- a different knob.)",
      "figure"),
 
     ("Now hear the difference", "temperature_effect",
      [],
-     "Same dial, on the 2024 chat model (GPT-2 is too weak -- it rambles even "
-     "at low temperature). Low: fluent. Middle: fluent. High: collapses into "
-     "word salad.\n\nTHEN THE REAL POINT: read the first two answers out loud. "
-     "Both are confident. BOTH ARE WRONG. The sky is blue because air "
-     "scatters short blue wavelengths more than long ones -- Rayleigh "
-     "scattering. Answer one literally concludes the sky looks 'white or "
-     "gray'. Nothing in the model noticed, because nothing in the model was "
-     "checking. A confident sentence is just a LIKELY sentence. This is the "
-     "most useful thing they will hear all hour -- do not rush it.",
+     "Same dial on the 2024 chat model (GPT-2 rambles even when cold). Low: "
+     "fluent. Middle: fluent. High: word salad. THEN THE REAL POINT: read the "
+     "first two answers aloud -- both confident, BOTH WRONG (the sky is blue "
+     "from Rayleigh scattering; answer one literally says 'white or gray'). "
+     "Nothing in the model was checking. A confident sentence is just a LIKELY "
+     "sentence. Most important thing they hear all hour -- don't rush it.",
      "figure"),
 
-    ("How it keeps track of what words mean", "attention",
+    ("How it keeps track of meaning", "attention",
      [],
-     "OPTIONAL / CUT SECOND. 'The nurse examined the patient because SHE was "
-     "worried' -- who is she? Inside the model, the word 'she' literally looks "
-     "back at 'nurse'. This is attention, the T in GPT. One head out of 144, "
-     "picked because it shows the pattern cleanly.",
+     "OPTIONAL / CUT FIRST. 'The nurse examined the patient because SHE was "
+     "worried' -- who is she? Inside the model, 'she' literally looks back at "
+     "'nurse'. That's attention, the T in GPT. One head out of 144, picked "
+     "because it shows the pattern cleanly.",
      "figure"),
 
     ("The ladder", None,
      ["the neuron you built            3 numbers",
       "GPT-2  (2019)                   124,000,000",
-      "the chatbot you just used       500,000,000",
+      "the chatbot you used            500,000,000",
       "ChatGPT / Claude                ~1,000,000,000,000",
       "",
       "Same three operations all the way up: multiply, add, squash."],
-     "Close part 3 here. The jump from 3 to a trillion is the only 'wow' they "
-     "need. Nothing new appears -- it is the same arithmetic, repeated.",
+     "Close part 3. The jump from 3 to a trillion is the only 'wow' needed. "
+     "Nothing new appears at the top -- same arithmetic, repeated.",
      "bullets"),
 
     ("What you did today", None,
-     ["Found cell types nobody had labeled.",
-      "Reproduced a result from a top biology journal.",
-      "Broke a classical algorithm, and saw why deep learning exists.",
+     ["Met all four kinds of machine learning — and used each one.",
+      "Invented a feature that predicts survival.",
+      "Broke a classic algorithm, and saw why deep learning exists.",
       "Ran a real language model and watched it guess.",
       "",
-      "All of it in Python. All of it free."],
-     "End on what THEY did, not on what the tools are. Mention the notebooks "
-     "stay theirs forever, and the 'if you have time' sections at the bottom "
-     "of each one. Point at the stretch exercises. Take questions.",
+      "All in Python. All free. All yours to keep."],
+     "End on what THEY did. The notebooks stay theirs -- point at the 🎛️ Try "
+     "it boxes and the stretch bits at the bottom of each. Take questions.",
      "bullets"),
 ]
 
@@ -391,34 +360,34 @@ TIMING = """# Speaker notes — Machine Learning & Language Models
 
 | min | what |
 |-----|------|
-| 0–5 | Hook + what ML is (slides 1–4) |
-| 5–8 | The dataset (slide 5) |
-| 8–20 | **Notebook 1, Parts 1–2** — clustering + PCA (slides 6–9) |
-| 20–24 | The composition null (slide 10) |
-| 24–34 | **Notebook 1, Parts 3–4** — mixing score + survival (slides 11–15) |
-| 34–42 | **Notebook 2** — segmentation, instructor-driven (slides 16–20) |
-| 42–56 | **Notebook 3** — LLMs (slides 21–27) |
-| 56–60 | Wrap (slide 28) |
+| 0–6 | What ML is + the four-kinds grid (slides 1–4) |
+| 6–10 | Open notebook 1 (slide 5) |
+| 10–30 | **Notebook 1** — the four vignettes: classify, regress, cluster, PCA (slides 6–9) |
+| 30–38 | **Capstone** — invent a feature, predict survival (slides 10–12) |
+| 38–46 | **Notebook 2** — image segmentation (slides 13–17) |
+| 46–58 | **Notebook 3** — language models (slides 18–24) |
+| 58–60 | Wrap (slide 25) |
 
 ## Cut list — in this order, if you are running late
 
-1. **Slide 9 (UMAP)** — pure bonus, say the word and move on. *saves ~2 min*
-2. **Slide 26 (attention)** — the concept survives without it. *saves ~4 min*
-3. **Notebook 3 Part 1 (the numpy neuron)** — go straight from the neuron
-   diagram to tokenization. *saves ~5 min*
-4. **Notebook 2 becomes slides only** — do not run the code live, just show
-   watershed_easy and watershed_hard. *saves ~5 min*
-5. **Last resort: slide 10, the composition null.** It is the best scientific
-   lesson in the hour, so cut it only if you must.
+1. **Slide 9 (PCA / dimensionality reduction)** — the weakest-payoff of the four
+   vignettes; name it and move on. *saves ~3 min*
+2. **Slide 23 (attention)** — the LLM story survives without it. *saves ~4 min*
+3. **Notebook 3 Part 1 (the numpy neuron)** — jump from the neuron diagram
+   straight to tokenization. *saves ~4 min*
+4. **Notebook 2 becomes slides only** — show watershed_easy / watershed_hard
+   instead of running it live. *saves ~5 min*
+5. **Last resort: the capstone (slides 10–12).** It's the best science in the
+   hour and the biggest wow, so cut it only if you truly must — and if you do,
+   at least show slide 12 (km_mixing) as a still.
 
 ## Before class
 
-- [ ] Host the four files in `data/processed/` somewhere public and put the URL
-      in `DATA_URL` at the top of `code/03_build_notebooks.py`, then re-run it.
-- [ ] Upload the three notebooks to Colab and shorten the links.
+- [ ] Notebooks pull data from the public GitHub repo already — just share the
+      Colab links (badges in the README).
 - [ ] Open notebook 3 once on the day — the first GPT-2 download is the slowest
       step and Colab caches nothing between sessions.
-- [ ] Run `python code/04_verify.py` and confirm every check passes.
+- [ ] Run `python code/04_verify.py --live` and confirm every check passes.
 
 ## If the wifi dies
 
@@ -428,6 +397,8 @@ in it is a real output from the models, so nothing is lost but the interaction.
 
 ## Numbers you will be asked about
 
+- **Classification:** ~89% on 2 markers, **95%** on all 16 (random forest, 3-fold CV).
+- **Regression:** immune fraction vs pathologist TIL score, **R² = 0.66**, n = 25.
 - 41 patients imaged; **38** have both cell data and clinical follow-up.
 - **33** patients are scoreable; 5 are "cold" (<250 immune cells) and set aside.
 - Mixed vs walled off: **hazard ratio 5.21, p = 0.032** (log-rank p = 0.017).

@@ -57,282 +57,307 @@ def write(name, cells):
 
 
 # ===========================================================================
-# Notebook 1 -- machine learning on real tumors
+# Notebook 1 -- the four kinds of machine learning, on real tumor cells
 # ===========================================================================
 def notebook_1():
     return [
         md("""
-# Finding patterns in a tumor 🔬
+# The four kinds of machine learning 🔬
 
 Forty-one women had a piece of their breast tumor photographed with a machine
-that measures **36 different proteins in every single cell**.
+that measures **36 proteins in every single cell** — about 200,000 cells in all.
 
-That's about 200,000 cells. Nobody can look at that by eye. So we'll teach a
-computer to find the patterns instead.
+We'll use that data to meet the **four main kinds of machine learning**. You
+don't have to write anything: every cell already works. Run them in order with
+`Shift + Enter`, then look for the **🎛️ Try it** boxes and change a number to
+see what happens.
 
-**Run every cell in order** with `Shift + Enter`.
+|  | predict a **category** | predict a **number** |
+|---|---|---|
+| **have labels** (supervised) | ① Classification | ② Regression |
+| **no labels** (unsupervised) | ③ Clustering | ④ Dimensionality reduction |
 """),
         code(STYLE.format(data_url=DATA_URL)),
         code('''
 cells = pd.read_csv(f"{DATA}/cells_sample.csv")
-print(cells.shape)
+print(cells.shape, "-> 20,000 cells, 16 protein measurements each")
 cells.head()
 '''),
         md("""
-Each **row** is one cell. Each **column** is how much of one protein that cell
-has. Think of it as a fingerprint, 16 numbers long.
-
-The `celltype` column is the answer key — what biologists said each cell is.
-**We're going to hide it**, let the computer group the cells on its own, and
-then see whether it rediscovered the same answer.
+Each **row** is one cell; each **column** is how much of one protein it has —
+a fingerprint 16 numbers long. The `celltype` column is the **answer key**:
+what a biologist said each cell is. We'll use it, hide it, and predict it.
 
 ---
-## Part 1 — Clustering: finding groups nobody labeled
+# ① Classification — *supervised, predict a category*
+
+**Supervised** means we *have* the answers and teach the computer to copy them.
+We'll show it labeled cells, then test it on cells it has never seen.
 """),
         code('''
-from sklearn.cluster import KMeans
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 MARKERS = ["CD45", "CD3", "CD8", "CD4", "CD20", "CD68", "CD11c", "MPO",
            "Pan-Keratin", "Beta catenin", "Keratin17", "Vimentin", "SMA",
            "CD31", "FoxP3", "HLA-DR"]
 
-X = StandardScaler().fit_transform(cells[MARKERS])   # put every protein on the same scale
-labels = KMeans(n_clusters=6, n_init=20, random_state=0).fit_predict(X)
+X = StandardScaler().fit_transform(cells[MARKERS])
+y = cells["celltype"]
 
-print("cells in each cluster:", np.bincount(labels))
+# split: teach on 70% of the cells, test on the other 30%
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3,
+                                                    random_state=0)
+
+model = RandomForestClassifier(n_estimators=120, random_state=0)
+model.fit(X_train, y_train)
+
+print(f"accuracy on cells it never saw: {model.score(X_test, y_test):.1%}")
 '''),
         md("""
-The computer just sorted 20,000 cells into 6 piles — **without ever seeing the
-answer key.** Now: what *is* each pile?
-
-Let's look at which proteins are high in each cluster.
+Around **90% correct** on cells it was never taught. Let's *see* the rule it
+learned. With just two markers — Keratin (tumor) and CD45 (immune) — we can
+draw the decision it makes everywhere on the map.
 """),
         code('''
-profile = pd.DataFrame(X, columns=MARKERS).groupby(labels).mean()
+from matplotlib.colors import ListedColormap
+from sklearn.linear_model import LogisticRegression
 
+def coarse(labels):
+    return np.where(labels == "Tumor", "tumor",
+            np.where(np.isin(labels, ["Endothelial", "Mesenchymal"]),
+                     "other", "immune"))
+
+two = StandardScaler().fit_transform(cells[["Pan-Keratin", "CD45"]])
+yc = coarse(cells.celltype.values)
+mini = LogisticRegression(max_iter=1000).fit(two, yc)
+
+xx, yy = np.meshgrid(np.linspace(two[:,0].min(), two[:,0].max(), 300),
+                     np.linspace(two[:,1].min(), two[:,1].max(), 300))
+Z = mini.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+order = {"tumor":0, "immune":1, "other":2}
+plt.figure(figsize=(7.5, 6.5))
+plt.pcolormesh(xx, yy, np.vectorize(order.get)(Z),
+               cmap=ListedColormap(["#cfe0f6","#f9d9c6","#cdeee0"]), shading="auto")
+for k, c in [("tumor", BLUE), ("immune", ORANGE), ("other", GREEN)]:
+    m = yc == k
+    plt.scatter(two[m,0][:1500], two[m,1][:1500], s=6, c=c, alpha=.6, label=k)
+plt.xlabel("Keratin  (more = tumor)"); plt.ylabel("CD45  (more = immune)")
+plt.legend(markerscale=3); plt.xticks([]); plt.yticks([]); plt.grid(False)
+plt.title("The rule the computer drew"); plt.show()
+'''),
+        md("""
+The shaded regions are the rule: land in the blue zone and it calls you a
+tumor cell. That is *all a classifier is* — a boundary learned from examples.
+
+> ### 🎛️ Try it
+> - In the accuracy cell, swap `RandomForestClassifier(...)` for
+>   `LogisticRegression(max_iter=500)`. Simpler model — does it do worse?
+> - In the picture, change `["Pan-Keratin", "CD45"]` to `["CD3", "CD8"]`
+>   (two T-cell markers). Can those two alone separate the cell types?
+
+---
+# ② Regression — *supervised, predict a number*
+
+Same idea — we have answers — but now the answer is a **number**, not a
+category. Real question from the paper: a pathologist eyeballs each tumor and
+gives it a "TILs" immune score from 1 to 4. **Can the computer's cell count
+predict that human score?**
+"""),
+        code('''
+patients = pd.read_csv(f"{DATA}/patients.csv")
+all_cells = pd.read_csv(f"{DATA}/cells_xy.csv.gz")
+all_cells["type"] = coarse(all_cells.celltype.values)
+
+# for each patient: what fraction of cells are immune?
+immune_frac = all_cells.groupby("SampleID").type.apply(lambda t: (t=="immune").mean())
+data = patients.assign(immune_frac=patients.SampleID.map(immune_frac)).dropna(subset=["TIL_score"])
+
+slope, intercept = np.polyfit(data.immune_frac, data.TIL_score, 1)
+r2 = np.corrcoef(data.immune_frac, data.TIL_score)[0,1] ** 2
+
+xs = np.linspace(0, data.immune_frac.max(), 50)
+plt.figure(figsize=(7.5, 6))
+plt.plot(xs, intercept + slope*xs, color=BLUE, lw=2.5, label=f"fitted line (R²={r2:.2f})")
+plt.scatter(data.immune_frac, data.TIL_score, s=90, c=ORANGE, edgecolors="white", zorder=3)
+plt.xlabel("immune fraction the COMPUTER counted")
+plt.ylabel("TIL score a PATHOLOGIST gave")
+plt.legend(); plt.title("Predicting a number"); plt.show()
+
+print(f"R² = {r2:.2f}   (1.0 = perfect, 0 = useless)")
+'''),
+        md("""
+The dots trend up the line: more immune cells counted, higher the human score.
+The computer's automatic count agrees with the expert's eye about **two-thirds
+of the way** (R² = 0.66). That's regression — fit a line, predict a number.
+
+> ### 🎛️ Try it
+> - Predict a patient yourself: if the computer counts **40%** immune cells,
+>   run `intercept + slope * 0.40`. What TIL score does the line guess?
+> - `TIL_score` runs 1–4. What in the data might keep R² from reaching 1.0?
+
+---
+# ③ Clustering — *unsupervised, no answer key*
+
+Now we **hide the answers**. Unsupervised learning gets no labels at all — it
+just looks for groups that naturally hang together. Watch it rediscover the
+cell types on its own.
+"""),
+        code('''
+from sklearn.cluster import KMeans
+
+labels = KMeans(n_clusters=6, n_init=20, random_state=0).fit_predict(X)
+print("the computer sorted 20,000 cells into 6 piles:", np.bincount(labels))
+
+profile = pd.DataFrame(X, columns=MARKERS).groupby(labels).mean()
 plt.figure(figsize=(11, 4.5))
 plt.imshow(profile, cmap="RdBu_r", vmin=-2.5, vmax=2.5, aspect="auto")
 plt.xticks(range(len(MARKERS)), MARKERS, rotation=45, ha="right")
-plt.yticks(range(6), [f"cluster {i}" for i in range(6)])
-plt.colorbar(label="how much of this protein")
-plt.grid(False); plt.title("Red = lots of it.  Blue = none of it.")
-plt.show()
+plt.yticks(range(6), [f"pile {i}" for i in range(6)])
+plt.colorbar(label="how much of this protein"); plt.grid(False)
+plt.title("Red = lots of it.  Which pile is which cell type?"); plt.show()
 '''),
         md("""
-### 🔍 Your turn — be the biologist
+### 🔍 Be the biologist
 
-Here's your cheat sheet:
+It grouped the cells with **no answer key**. Use the cheat sheet to name each
+pile from its red squares, then run the next cell to check.
 
-| protein | means the cell is a... |
+| marker | cell |
 |---|---|
-| **CD3, CD4, CD8** | T cell (the immune system's assassins) |
-| **CD20** | B cell (makes antibodies) |
-| **MPO** | neutrophil (first responder) |
-| **CD68** | macrophage (the eater) |
-| **Pan-Keratin, Keratin17** | tumor cell |
-| **CD31** | blood vessel |
-| **Vimentin, SMA** | structural/support cell |
-
-Look at the red squares in each row and write down your guesses.
-Then run the next cell to see how you did.
+| CD3, CD4, CD8 | T cell |
+| CD20 | B cell |
+| MPO | neutrophil |
+| CD68 | macrophage |
+| Pan-Keratin, Keratin17 | tumor |
 """),
         code('''
-answer = pd.crosstab(labels, cells["celltype"])
+answer = pd.crosstab(labels, cells.celltype)
 for i in range(6):
     top = profile.loc[i].sort_values(ascending=False).head(3)
-    print(f"cluster {i}: high in {', '.join(top.index)}")
-    print(f"           -> really mostly {answer.loc[i].idxmax()}\\n")
+    print(f"pile {i}: high in {', '.join(top.index):40s} -> really mostly {answer.loc[i].idxmax()}")
 '''),
         md("""
-The computer found T cells, B cells, neutrophils and tumor cells **on its
-own**. That's *clustering*: finding groups when nobody gave you labels.
+It found T cells, B cells, neutrophils and tumor cells — **without ever being
+told they existed.** That's the difference: classification *reproduces* labels
+you have; clustering *discovers* groups you don't.
+
+> ### 🎛️ Try it
+> Change `n_clusters=6` to `3`, or to `10`. With more piles, do rare cell
+> types split off into their own group?
 
 ---
-## Part 2 — Squashing 16 numbers into a picture
+# ④ Dimensionality reduction — *unsupervised, simplify*
 
-Every cell has 16 measurements, so each cell is a point in *16-dimensional*
-space. We can't see that. **PCA** squashes it down to 2 so we can.
+Each cell is 16 numbers — a point in *16-dimensional* space we can't picture.
+**PCA** squashes those 16 numbers down to 2 so we can put every cell on a map.
 """),
         code('''
 from sklearn.decomposition import PCA
 
 xy2 = PCA(n_components=2).fit_transform(X)
-
-kind = np.where(cells.celltype == "Tumor", "tumor",
-        np.where(cells.celltype.isin(["Endothelial", "Mesenchymal"]), "other",
-                 "immune"))
-
 plt.figure(figsize=(7.5, 6.5))
 for k, c in [("other", GREEN), ("tumor", BLUE), ("immune", ORANGE)]:
-    m = kind == k
-    plt.scatter(xy2[m, 0], xy2[m, 1], s=4, c=c, alpha=0.5, label=k)
+    m = coarse(cells.celltype.values) == k
+    plt.scatter(xy2[m,0], xy2[m,1], s=4, c=c, alpha=.5, label=k)
 plt.legend(markerscale=4); plt.xticks([]); plt.yticks([]); plt.grid(False)
-plt.title("Every dot is one cell")
-plt.show()
+plt.title("16 numbers per cell, squashed onto a 2-D map"); plt.show()
 '''),
         md("""
-Tumor cells land in one region, immune cells in another — and again, **the
-colors were never used to make the picture.** The structure was already there.
+Tumor cells settle in one region, immune cells in another — and the colors
+were **painted on afterwards**, never used to build the map. The structure was
+already in the numbers. That's the fourth kind: keep the shape of the data
+while throwing away dimensions you can't see.
 
 ---
-## Part 3 — Does any of this predict who survives?
+# ⑤ Capstone: inventing your own feature 🏆
 
-Now let's go from cells to *patients*. First question: does it matter **which
-cells** a patient has?
+The four kinds are the toolkit. Real science comes from **feeding them the
+right numbers.** Here's the actual finding from this dataset.
+
+First, an honest failure. Does *which* cells a patient has predict survival?
 """),
         code('''
-patients = pd.read_csv(f"{DATA}/patients.csv")
-all_cells = pd.read_csv(f"{DATA}/cells_xy.csv.gz")
-
-# what fraction of each patient's tumor is each cell type?
 composition = pd.crosstab(all_cells.SampleID, all_cells.celltype, normalize="index")
 composition = composition.loc[composition.index.isin(patients.SampleID)]
-
 groups = KMeans(2, n_init=50, random_state=0).fit_predict(
     StandardScaler().fit_transform(composition))
+surv = pd.DataFrame({"SampleID": composition.index, "group": groups}).merge(patients)
 
-df = pd.DataFrame({"SampleID": composition.index, "group": groups}).merge(patients)
-print(df.groupby("group").size())
-'''),
-        code('''
 def survival_curve(days, died):
-    """Kaplan-Meier: the fraction still alive as time goes on."""
-    order = np.argsort(days)
-    days, died = np.array(days)[order], np.array(died)[order]
+    order = np.argsort(days); days, died = np.array(days)[order], np.array(died)[order]
     t, s, alive, n = [0], [1.0], 1.0, len(days)
     for i, d in enumerate(days):
-        if died[i]:
-            alive *= 1 - 1 / n
-            t.append(d / 365.25); s.append(alive)
+        if died[i]: alive *= 1 - 1/n; t.append(d/365.25); s.append(alive)
         n -= 1
-    return t + [days.max() / 365.25], s + [alive]
+    return t + [days.max()/365.25], s + [alive]
 
 for g, c in [(0, BLUE), (1, ORANGE)]:
-    s = df[df.group == g]
-    t, surv = survival_curve(s.survival_days, s.event)
-    plt.step(t, surv, where="post", color=c, lw=2.5, label=f"group {g} (n={len(s)})")
-plt.ylim(0, 1.02); plt.xlabel("years"); plt.ylabel("fraction still alive")
-plt.title("Grouped by WHICH cells they have"); plt.legend()
-plt.show()
+    s = surv[surv.group == g]; t, sv = survival_curve(s.survival_days, s.event)
+    plt.step(t, sv, where="post", color=c, lw=2.5, label=f"group {g} (n={len(s)})")
+plt.ylim(0,1.02); plt.xlabel("years"); plt.ylabel("fraction alive")
+plt.title("Grouped by WHICH cells they have"); plt.legend(); plt.show()
 '''),
         md("""
-### 🤔 The lines sit on top of each other.
-
-We grouped patients by which cells they have, and it tells us **nothing** about
-who survives. That's a real result, and it's not a failure — it's a clue.
-
-If *who* is in the tumor doesn't matter... maybe ***where*** they are does.
-
----
-## Part 4 — Where the cells are
-
-Here are two patients. Both are about **half immune cells**. Look at them.
+The two lines sit on top of each other — cell *composition* tells us almost
+nothing about survival. So we invent a better number. Look at two patients with
+the **same amount** of immune cells:
 """),
         code('''
 fig, axes = plt.subplots(1, 2, figsize=(13, 6.5))
 for ax, pid in zip(axes, [3, 12]):
     g = all_cells[all_cells.SampleID == pid]
-    g = g.assign(kind=np.where(g.celltype == "Tumor", "tumor",
-                 np.where(g.celltype.isin(["Endothelial", "Mesenchymal"]),
-                          "other", "immune")))
     for k, c in [("other", GREEN), ("tumor", BLUE), ("immune", ORANGE)]:
-        s = g[g.kind == k]
-        ax.scatter(s.x, s.y, s=3, c=c, alpha=0.75)
-    pct = (g.kind == "immune").mean()
-    ax.set_title(f"Patient {pid} — {pct:.0%} immune cells")
+        s = g[g.type == k]; ax.scatter(s.x, s.y, s=3, c=c, alpha=.75)
+    ax.set_title(f"Patient {pid} — {(g.type=='immune').mean():.0%} immune")
     ax.set_xticks([]); ax.set_yticks([]); ax.grid(False); ax.set_aspect("equal")
 plt.show()
 '''),
         md("""
-Same ingredients, completely different architecture. On the left the immune
-cells are **walled off** in their own territory. On the right they're **mixed**
-right in among the tumor.
+Left: immune cells **walled off** in their own territory. Right: **mixed**
+right in among the tumor. Same ingredients, different architecture. Let's turn
+that into a number — the **mixing score**:
 
-Let's turn that into a number. For each patient:
-
-> **mixing score = (immune cells touching tumor cells) ÷ (immune cells touching each other)**
-
-Low score = walled off. High score = mixed together.
+> mixing score = immune cells touching tumor cells ÷ immune cells touching each other
 """),
         code('''
 from scipy.spatial import cKDTree
 
-all_cells["kind"] = np.where(all_cells.celltype == "Tumor", "tumor",
-    np.where(all_cells.celltype.isin(["Endothelial", "Mesenchymal"]), "other", "immune"))
-
 rows = []
 for pid, g in all_cells.groupby("SampleID"):
-    # every pair of cells within 30 pixels of each other = "touching"
-    pairs = cKDTree(g[["x", "y"]].values).query_pairs(30, output_type="ndarray")
-    a, b = g.kind.values[pairs[:, 0]], g.kind.values[pairs[:, 1]]
-
-    immune_immune = ((a == "immune") & (b == "immune")).sum()
-    immune_tumor = (((a == "immune") & (b == "tumor")) |
-                     ((a == "tumor") & (b == "immune"))).sum()
-
-    rows.append({"SampleID": pid,
-                 "mixing_score": immune_tumor / max(immune_immune, 1),
-                 "n_immune": (g.kind == "immune").sum()})
-
+    pairs = cKDTree(g[["x","y"]].values).query_pairs(30, output_type="ndarray")
+    a, b = g.type.values[pairs[:,0]], g.type.values[pairs[:,1]]
+    imm_imm = ((a=="immune") & (b=="immune")).sum()
+    imm_tum = (((a=="immune") & (b=="tumor")) | ((a=="tumor") & (b=="immune"))).sum()
+    rows.append({"SampleID": pid, "mixing": imm_tum/max(imm_imm,1),
+                 "n_immune": (g.type=="immune").sum()})
 scores = pd.DataFrame(rows)
-scores.head()
-'''),
-        md("""
-Two things before we use these scores:
 
-1. Some tumors have almost **no** immune cells at all ("cold"). The ratio is
-   meaningless for them, so we set them aside.
-2. Everyone else we split at a cutoff of **0.26**.
-"""),
-        code('''
-warm = scores[scores.n_immune >= 250].copy()
-warm["our_label"] = np.where(warm.mixing_score < 0.26, "walled off", "mixed")
-
-check = warm.merge(patients, on="SampleID")
-match = (check.our_label.map({"walled off": "compartmentalized",
-                              "mixed": "mixed"}) == check.published_class)
-print(f"We agree with the published paper on {match.sum()} of {len(check)} patients.")
-'''),
-        md("""
-### 🎉 Every single one.
-
-Those published labels took a research team at Stanford a lot of work. You just
-reproduced them with about ten lines of code.
-
-Now the real question — **does it predict survival?**
-"""),
-        code('''
+warm = scores[scores.n_immune >= 250].merge(patients, on="SampleID")
+warm["label"] = np.where(warm.mixing < 0.26, "walled off", "mixed")
 for lab, c in [("walled off", BLUE), ("mixed", ORANGE)]:
-    s = check[check.our_label == lab]
-    t, surv = survival_curve(s.survival_days, s.event)
-    plt.step(t, surv, where="post", color=c, lw=2.5, label=f"{lab} (n={len(s)})")
-plt.ylim(0, 1.02); plt.xlabel("years"); plt.ylabel("fraction still alive")
-plt.title("Grouped by WHERE their cells are"); plt.legend()
-plt.show()
+    s = warm[warm.label == lab]; t, sv = survival_curve(s.survival_days, s.event)
+    plt.step(t, sv, where="post", color=c, lw=2.5, label=f"{lab} (n={len(s)})")
+plt.ylim(0,1.02); plt.xlabel("years"); plt.ylabel("fraction alive")
+plt.title("Grouped by WHERE their cells are"); plt.legend(); plt.show()
 '''),
         md("""
 ## That gap is the whole point.
 
-Patients whose immune cells were **mixed in** with the tumor did far worse —
-about **5× the risk of dying** — than patients whose immune cells were **walled
-off**. Same disease, same cell types, different architecture.
+Patients whose immune cells were **mixed into** the tumor did far worse —
+about **5× the risk of dying** — than those whose immune cells were **walled
+off**. *Which* cells you have: told us nothing. *Where* they are: told us a lot.
 
-*Which* cells you have: told us nothing.
-*Where* they are: told us a lot.
+You just reproduced a finding from a paper in *Cell*, one of the top journals
+in biology, in about ten lines of code.
 
----
-### 🚀 If you have time
-
-- Change `30` to `50` in the mixing-score cell. Do the results survive?
-- Change the cutoff `0.26`. How much can you move it before the answer changes?
-- Try `n_clusters=3` or `10` in Part 1. What new cell types appear?
+> ### 🎛️ Try it
+> - Change `30` (the touching distance) to `50`. Does the survival gap hold?
+> - Change the `0.26` cutoff. How far can you push it before it breaks?
 """),
     ]
 
-
-# ===========================================================================
-# Notebook 2 -- how a computer finds cells in a picture
 # ===========================================================================
 def notebook_2():
     return [

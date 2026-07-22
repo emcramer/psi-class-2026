@@ -370,6 +370,103 @@ def fig_neuron():
     save(fig, "neuron")
 
 
+# ---------------------------------------------------------------------------
+# 9. The map of machine learning -- the backbone concept slide
+# ---------------------------------------------------------------------------
+def fig_ml_grid():
+    from matplotlib.patches import FancyBboxPatch
+    cards = [   # (col, row, method, one-liner, today's example)
+        (0, 1, "CLASSIFICATION", "predict a category", "which cell type is this?"),
+        (1, 1, "REGRESSION", "predict a number", "what TIL score would a\npathologist give?"),
+        (0, 0, "CLUSTERING", "find groups on its own", "what cell types exist,\nwith no answer key?"),
+        (1, 0, "DIMENSIONALITY\nREDUCTION", "simplify many numbers", "draw 16 measurements\nas a 2-D map"),
+    ]
+    fig, ax = plt.subplots(figsize=(13, 6.8))
+    for col, row, method, tag, ex in cards:
+        x, y = 0.30 + col * 0.36, 0.06 + row * 0.47
+        ax.add_patch(FancyBboxPatch((x, y), 0.32, 0.40,
+                                    boxstyle="round,pad=0.008,rounding_size=0.02",
+                                    facecolor="#f4f3ef", edgecolor=P.AXIS,
+                                    linewidth=1.2, transform=ax.transAxes))
+        ax.text(x + 0.16, y + 0.32, method, fontsize=18, fontweight="bold",
+                color=BLUE, ha="center", va="center", transform=ax.transAxes,
+                linespacing=1.0)
+        ax.text(x + 0.16, y + 0.205, tag, fontsize=15, color=INK, ha="center",
+                va="center", transform=ax.transAxes, style="italic")
+        ax.text(x + 0.16, y + 0.075, ex, fontsize=13, color=INK2, ha="center",
+                va="center", transform=ax.transAxes, linespacing=1.2)
+    for y_center, big, small in [(0.73, "SUPERVISED", "you have labels"),
+                                 (0.26, "UNSUPERVISED", "no labels")]:
+        ax.text(0.075, y_center, big, fontsize=17, fontweight="bold",
+                color=INK, ha="center", va="center", rotation=90,
+                transform=ax.transAxes)
+        ax.text(0.155, y_center, small, fontsize=12, color=MUTED, ha="center",
+                va="center", rotation=90, transform=ax.transAxes)
+    ax.axis("off"); ax.grid(False)
+    ax.set_title("Four kinds of machine learning", fontsize=24, pad=8)
+    save(fig, "ml_grid")
+
+
+# ---------------------------------------------------------------------------
+# 10. Supervised CLASSIFICATION -- the learned decision boundary
+# ---------------------------------------------------------------------------
+def fig_classification(sample):
+    from matplotlib.colors import ListedColormap
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.model_selection import train_test_split
+
+    feats = ["Pan-Keratin", "CD45"]
+    Xs = StandardScaler().fit_transform(sample[feats])
+    y = sample["coarse"].values
+    Xtr, Xte, ytr, yte = train_test_split(Xs, y, test_size=0.3,
+                                          random_state=0, stratify=y)
+    clf = LogisticRegression(max_iter=1000).fit(Xtr, ytr)
+    acc = clf.score(Xte, yte)
+    RESULTS["classification_2marker_acc"] = f"{acc:.3f}"
+    RESULTS["classification_16marker_acc"] = f"{P.classification_accuracy(sample):.3f}"
+
+    fig, ax = plt.subplots(figsize=(8.3, 7.2))
+    xx, yy = np.meshgrid(np.linspace(*np.percentile(Xs[:, 0], [0, 100]), 300),
+                         np.linspace(*np.percentile(Xs[:, 1], [0, 100]), 300))
+    Z = clf.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+    order = {"tumor": 0, "immune": 1, "other": 2}
+    ax.pcolormesh(xx, yy, np.vectorize(order.get)(Z),
+                  cmap=ListedColormap(["#cfe0f6", "#f9d9c6", "#cdeee0"]),
+                  shading="auto", zorder=0)
+    for k, c in P.COARSE_COLORS.items():
+        m = y == k
+        ax.scatter(Xs[m, 0][:1500], Xs[m, 1][:1500], s=6, c=c, alpha=0.6,
+                   linewidths=0, label=k)
+    ax.set_xlabel("Keratin  (more = tumor)")
+    ax.set_ylabel("CD45  (more = immune)")
+    ax.set_title(f"Show it labeled cells, it learns a rule\n"
+                 f"then labels new cells {acc:.0%} correctly", fontsize=19)
+    ax.legend(markerscale=3, loc="upper right"); ax.grid(False)
+    ax.set_xticks([]); ax.set_yticks([])
+    save(fig, "classification")
+
+
+# ---------------------------------------------------------------------------
+# 11. Supervised REGRESSION -- machine's immune count vs pathologist's eye
+# ---------------------------------------------------------------------------
+def fig_regression(xy, pat):
+    d, slope, intercept, r2 = P.til_regression(xy, pat)
+    RESULTS["regression_r2"] = f"{r2:.2f}"
+    RESULTS["regression_n"] = str(len(d))
+
+    fig, ax = plt.subplots(figsize=(8.3, 6.8))
+    xs = np.linspace(0, d["immune_frac"].max() * 1.05, 50)
+    ax.plot(xs, intercept + slope * xs, color=BLUE, lw=2.5, zorder=2,
+            label=f"the line the computer fit  (R² = {r2:.2f})")
+    ax.scatter(d["immune_frac"], d["TIL_score"], s=120, c=ORANGE,
+               edgecolors=P.SURFACE, linewidths=2, zorder=3)
+    ax.set_xlabel("immune cells the COMPUTER counted  (fraction)")
+    ax.set_ylabel("TIL score a PATHOLOGIST gave  (by eye)")
+    ax.set_title("Predicting a number, not a category", fontsize=20)
+    ax.legend(loc="upper left"); ax.grid(True)
+    save(fig, "regression")
+
+
 def main():
     print("loading ...")
     sample, xy, pat = P.load()
@@ -382,9 +479,12 @@ def main():
         sorted(mix.loc[mix.our_class == "cold", "SampleID"].tolist()))
 
     print("figures:")
+    fig_ml_grid()
     comp, mixed = fig_two_patients(xy, mix)
     fig_cluster_heatmap(sample)
     fig_embeddings(sample)
+    fig_classification(sample)
+    fig_regression(xy, pat)
     fig_composition_null(sample_all, pat)
     fig_mixing_survival(mix, pat)
     fig_segmentation()
