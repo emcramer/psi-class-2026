@@ -1,0 +1,26 @@
+# The raw MIBI download (~400 MB). Get it from the paper's data release:
+# https://mibi-share.ionpath.com  -- see README.
+data/TNBC_shareCellData/
+
+# The Keren et al. paper PDF. Not ours to redistribute; link to the DOI instead.
+misc/
+
+# Office lock files, created while a deck is open
+~$*
+
+# macOS / OneDrive noise
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Notebook outputs are stripped before committing -- students should get clean
+# notebooks with nothing pre-run.
