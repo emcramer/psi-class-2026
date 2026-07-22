@@ -3,6 +3,7 @@ Verify everything before class.
 
     python code/04_verify.py            # numbers only  (fast)
     python code/04_verify.py --full     # also executes all three notebooks
+    python code/04_verify.py --live     # ...against the published GitHub urls
 
 The assertions exist so a wrong number can never quietly reach a slide. If the
 data or the analysis code changes and a headline claim stops holding, this
@@ -123,9 +124,16 @@ def check_figures() -> None:
         print(f"{PASS}  all {len(expected)} figures present")
 
 
-def run_notebooks() -> None:
-    """Execute each notebook against the LOCAL data files."""
-    print("\nnotebook execution (this takes a few minutes)")
+def run_notebooks(live: bool = False) -> None:
+    """Execute each notebook end to end.
+
+    By default the DATA url is rewritten to the local processed folder, so the
+    check works offline. With live=True the notebooks run exactly as committed,
+    fetching from GitHub -- that is the real student experience and the only
+    way to catch a broken or unpushed data URL.
+    """
+    print(f"\nnotebook execution, {'LIVE urls' if live else 'local files'} "
+          "(this takes a few minutes)")
     local = P.PROC.as_uri()
     for name, interpreter in INTERPRETERS.items():
         src = P.ROOT / "code" / name
@@ -137,10 +145,11 @@ def run_notebooks() -> None:
             # Edit the parsed notebook, not the raw JSON -- the quotes around
             # the URL are escaped on disk.
             nb = nbformat.read(src, as_version=4)
-            for cell in nb.cells:
-                if cell.cell_type == "code":
-                    cell.source = re.sub(r'DATA = "[^"]*"',
-                                         f'DATA = "{local}"', cell.source)
+            if not live:
+                for cell in nb.cells:
+                    if cell.cell_type == "code":
+                        cell.source = re.sub(r'DATA = "[^"]*"',
+                                             f'DATA = "{local}"', cell.source)
             nbformat.write(nb, dst)
             r = subprocess.run(
                 [interpreter, "-m", "nbconvert", "--to", "notebook",
@@ -158,13 +167,16 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--full", action="store_true",
                     help="also execute the notebooks end to end")
+    ap.add_argument("--live", action="store_true",
+                    help="run the notebooks against the published GitHub "
+                         "urls instead of local files (implies --full)")
     args = ap.parse_args()
 
     check_data_files()
     check_figures()
     check_numbers()
-    if args.full:
-        run_notebooks()
+    if args.full or args.live:
+        run_notebooks(live=args.live)
 
     print()
     if failures:

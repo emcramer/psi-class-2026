@@ -180,7 +180,7 @@ DECK = [
      "of each blob. Watershed: pour water from each center until floods meet.",
      "do"),
 
-    ("On easy cells, it works", "watershed_easy",
+    ("On easy cells, it works...better", "watershed_easy",
      [],
      "158 cells really there, ~177 found, 72% of outlines right. Old-fashioned "
      "math, no neural network, works fine. Now watch what happens on the real "
@@ -239,7 +239,7 @@ DECK = [
      "let them try their own prompt.",
      "figure"),
 
-    ("Temperature: it re-weights, it does not delete", "temperature_mechanism",
+    ("Temperature changes prediction weights", "temperature_mechanism",
      [],
      "ANSWER THE QUESTION THEY WILL ASK. Temperature is not a cutoff. The "
      "model's raw scores get DIVIDED by the temperature before being turned "
