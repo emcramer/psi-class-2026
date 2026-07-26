@@ -1,67 +1,77 @@
-# Speaker notes — Machine Learning & Language Models
+# Speaker notes: Machine Learning & Language Models
 
 **Audience:** high school, no coding assumed.
-**Nominal length:** ~60 min. Built long on purpose — see the cut list.
+**Nominal length:** about 60 minutes. The deck is built a little long on
+purpose, so the cut list below tells you what to drop if you run behind.
 
 ## Shape of the hour
 
 | min | what |
 |-----|------|
-| 0–6 | What ML is + the four-kinds grid (slides 1–4) |
-| 6–10 | Open notebook 1 (slide 5) |
-| 10–30 | **Notebook 1** — the four vignettes: classify, regress, cluster, PCA (slides 6–9) |
-| 30–38 | **Capstone** — invent a feature, predict survival (slides 10–12) |
-| 38–46 | **Notebook 2** — image segmentation (slides 13–17) |
-| 46–58 | **Notebook 3** — language models (slides 18–24) |
-| 58–60 | Wrap (slide 25) |
+| 0 to 6 | What machine learning is, plus the four-kinds grid (slides 1 to 4) |
+| 6 to 10 | Open notebook 1 (slide 5) |
+| 10 to 30 | **Notebook 1**, the four examples: classify, regress, cluster, PCA (slides 6 to 9) |
+| 30 to 38 | **Capstone**, engineer a feature and predict survival (slides 10 to 12) |
+| 38 to 46 | **Notebook 2**, image segmentation (slides 13 to 17) |
+| 46 to 58 | **Notebook 3**, language models (slides 18 to 24) |
+| 58 to 60 | Wrap (slides 25 to 26) |
 
-## Cut list — in this order, if you are running late
+## Cut list, in this order, if you are running late
 
-1. **Slide 9 (PCA / dimensionality reduction)** — the weakest-payoff of the four
-   vignettes; name it and move on. *saves ~3 min*
-2. **Slide 23 (attention)** — the LLM story survives without it. *saves ~4 min*
-3. **Notebook 3 Part 1 (the numpy neuron)** — jump from the neuron diagram
-   straight to tokenization. *saves ~4 min*
-4. **Notebook 2 becomes slides only** — show watershed_easy / watershed_hard
-   instead of running it live. *saves ~5 min*
-5. **Last resort: the capstone (slides 10–12).** It's the best science in the
-   hour and the biggest wow, so cut it only if you truly must — and if you do,
-   at least show slide 12 (km_mixing) as a still.
+1. **Slide 9 (PCA / dimensionality reduction).** It has the smallest payoff of
+   the four examples, so you can name it and move on. Saves about 3 minutes.
+2. **Slide 24 (attention).** The language-model story holds together without it.
+   Saves about 4 minutes.
+3. **Notebook 3, the numpy neuron.** Jump from the neuron diagram straight to
+   tokenization. Saves about 4 minutes.
+4. **Notebook 2 as slides only.** Show watershed_easy and watershed_hard instead
+   of running the code live. Saves about 5 minutes.
+5. **Last resort, the capstone (slides 10 to 12).** This is the best science in
+   the hour and the biggest payoff, so cut it only if you truly must, and if you
+   do, at least show slide 12 (km_mixing) as a still image.
 
 ## Before class
 
-- [ ] Notebooks pull data from the public GitHub repo already — just share the
-      Colab links (badges in the README).
-- [ ] Open notebook 3 once on the day — the first GPT-2 download is the slowest
-      step and Colab caches nothing between sessions.
-- [ ] Run `python code/04_verify.py --live` and confirm every check passes.
+- [ ] The notebooks currently point at a **local** data path for testing
+      (`DATA = "../data/processed"`). Before you share them with students,
+      switch each notebook's `DATA` line back to the GitHub URL, which is kept
+      right above it as a comment. Otherwise Colab will not find the data.
+- [ ] Open notebook 3 once on the day, because the first GPT-2 download is the
+      slowest step and Colab does not cache it between sessions.
+- [ ] With the GitHub URL active, run `python code/04_verify.py --live` and
+      confirm every check passes.
 
 ## If the wifi dies
 
-Notebook 1 and 2 need only a 4 MB download; notebook 3 needs ~1.5 GB of model
-weights. If the network is bad, present part 3 from the slides — every figure
-in it is a real output from the models, so nothing is lost but the interaction.
+Notebooks 1 and 2 need only a 4 MB download, while notebook 3 also needs about
+1.5 GB of model weights. If the network is bad, present the language-model
+section from the slides, since every figure there is a real output from the
+models, so you lose only the live interaction.
 
 ## Numbers you will be asked about
 
-- **Classification:** ~89% on 2 markers, **95%** on all 16 (random forest, 3-fold CV).
-- **Regression:** immune fraction vs pathologist TIL score, **R² = 0.66**, n = 25.
-- 41 patients imaged; **38** have both cell data and clinical follow-up.
-- **33** patients are scoreable; 5 are "cold" (<250 immune cells) and set aside.
-- Mixed vs walled off: **hazard ratio 5.21, p = 0.032** (log-rank p = 0.017).
-- The original paper reported HR 4.97, p = 0.03 — we are reproducing it, not
-  matching it to the decimal, because our cell-contact rule is simpler.
-- Survival here is **overall survival**, not disease-free. Say "survival".
+- **Classification:** about 89% on 2 markers, and **95%** on all 16 (random
+  forest, 3-fold cross-validation).
+- **Regression:** immune fraction versus pathologist TILs score, **R^2 = 0.66**,
+  n = 25.
+- 41 patients were imaged, and **38** have both cell data and clinical follow-up.
+- **33** patients are scoreable; the other 5 are "cold" (fewer than 250 immune
+  cells) and are set aside.
+- Mixed versus walled off: **hazard ratio 5.21, p = 0.032** (log-rank p = 0.017).
+- The original paper reported HR 4.97, p = 0.03. We are reproducing the finding,
+  not matching it to the decimal, because our cell-contact rule is simpler.
+- Survival here is **overall survival**, not disease-free survival, so say
+  "survival".
 
 ## Honest caveats worth saying out loud
 
 - 38 patients is a *small* study. One or two patients moving could change the
-  p-value. Real conclusions need hundreds.
-- We chose the 0.26 cutoff after looking at the data. Tell them that — then
-  point at the notebook exercise that tests other cutoffs.
+  p-value, and a real conclusion would need hundreds.
+- We chose the 0.26 cutoff after looking at the data. Tell the students that,
+  and then point them at the notebook box that tries other cutoffs.
 - The segmentation images in notebook 2 are **simulated** from the real cell
   outlines, because the raw microscope channels are not in the public download.
-  The difficulty is real; the pixels are not.
+  The difficulty is real, but the pixels are not.
 
 ---
 
@@ -69,149 +79,150 @@ in it is a real output from the models, so nothing is lost but the interaction.
 
 
 ### 1. Machine Learning & Language Models
-> Teaching computers to find patterns —
-> then taking a language model apart.
+> Teaching computers to find patterns in data
 
-Introduce yourself in 20 seconds. Frame the hour: first we meet the four main kinds of machine learning by using them on real cancer data, then we look at how a language model works. Two different tools.
+Introduce yourself briefly. Set up the hour: we will meet the four main kinds of machine learning by using each one on real cancer data, and then we will look at how a large language model works. These are two different kinds of tools, and we will treat them separately.
 
 ### 2. What is machine learning?
-> Finding patterns in data — without being handed the rule.
-> You never wrote down 'a cat has pointy ears and whiskers.'
-> You saw a few thousand cats.
-> The computer learns the same way: from examples.
+> Finding patterns in data, without being handed the rule.
+> You never wrote down that a cat has pointy ears and whiskers.
+> You just saw a few thousand cats.
+> The computer learns the same way, from examples.
 
-Keep this short. The one idea: nobody writes the rule down. Ask how you'd write instructions to recognize a friend's face -- you can't, but you can show 10,000 examples. That's ML.
+Keep this short. The single idea is that nobody writes the rule down. Ask the students how they would write instructions for a computer to recognize a friend's face. You cannot really do it with rules, but you can show the computer thousands of examples and let it learn the pattern, and that is what machine learning is.
 
 ### 3. Four kinds of machine learning
 *figure: `ml_grid.png`*
 
-THE BACKBONE SLIDE. Walk the 2x2 slowly. Top row SUPERVISED = you have the answers and teach the computer to copy them; splits into predicting a CATEGORY (classification) or a NUMBER (regression). Bottom row UNSUPERVISED = no answers, find structure yourself; either group things (clustering) or simplify them (dimensionality reduction). We'll do one example of each, all on the same tumor data. Come back to this grid between vignettes so they never lose the map.
+This is the map for the whole first half, so walk through it slowly. The top row is supervised learning, where we have the correct answers, called labels, and we teach the computer to reproduce them. Supervised problems split into predicting a category, which is classification, or predicting a number, which is regression. The bottom row is unsupervised learning, where there are no labels and the computer looks for structure on its own, either by grouping things (clustering) or by simplifying them (dimensionality reduction). We will do one example of each, all on the same tumor data. Come back to this grid between examples so the students keep their bearings.
 
 ### 4. Where the data comes from
 *figure: `mask_vs_phenotype.png`*
 
-41 women with triple-negative breast cancer -- the aggressive kind with no targeted treatment. A machine measured 36 proteins in every cell. ~200,000 cells. Every cell was outlined and labeled. That labeled table is what feeds all four kinds of ML.
+The data comes from 41 women with triple-negative breast cancer, which is an aggressive form with no targeted treatment. A machine measured 36 proteins in every cell, which comes to about 200,000 cells. Every cell was outlined and then labeled with its type, and that labeled table is what feeds all four kinds of machine learning. We will see how the images become a table in the second example.
 
-### 5. Notebook 1 — open it now
+### 5. Notebook 1: open it now
 > The four kinds of machine learning,
 > on 20,000 real tumor cells.
-> Everything runs as-is. Look for the 🎛️ Try it boxes.
+> Every cell runs on its own. Look for the 🎛️ Try it boxes.
 
-Get everyone into notebook 1. Wait for the slowest laptop. Run the setup and load cells together. Emphasize: nothing is broken or blank -- they run cells and then tinker with the knobs. You'll drive the concepts from the slides while they follow along and play.
+Get everyone into notebook 1 and wait for the slowest laptop. Run the setup cell and load the cells together. Remind the students that nothing is broken or blank: they run each cell in order and then experiment with the knobs in the Try it boxes. You will drive the concepts from the slides while they follow along and play with the code.
 
-### 6. ① Classification — predict a category
+### 6. ① Classification: predict a category
 *figure: `classification.png`*
 
-SUPERVISED. We HAVE labels (a biologist named every cell), so we teach the computer to copy them, then test on cells it never saw: ~90% right. The picture is the rule it learned on two markers -- land in the blue zone, it calls you a tumor cell. That shaded boundary IS the classifier. The full 16-marker model hits 95%.
+This is supervised learning. We have labels, because a biologist named every cell, so we teach the computer to reproduce them and then test it on cells it never saw. It gets about 90 percent right using two markers, and about 95 percent using all 16. The picture shows the rule it learned, which we call a decision boundary. If a cell lands in the blue region, the computer calls it a tumor cell, and that shaded boundary is the whole idea of a classifier.
 
-### 7. ② Regression — predict a number
+### 7. ② Regression: predict a number
 *figure: `regression.png`*
 
-Still supervised, but the answer is a NUMBER now, not a category. A pathologist eyeballs each tumor and gives an immune score 1-4. Can the computer's automatic immune-cell count predict that human score? The fitted line says yes, about two-thirds of the way (R^2 = 0.66). Regression = fit a line, read off a number. This is also the bridge from images to the clinic.
+This is still supervised, but the answer is a number now instead of a category. A pathologist looks at each tumor and gives it a tumor-infiltrating lymphocyte score, or TILs score, from 1 to 4, based on how much immune presence they see. The question is whether the computer's automatic immune-cell count can predict that human score. The fitted line says it can, about two thirds of the way there, with an R-squared of 0.66. Regression means fitting a line and reading off a number, and this example is also the bridge from images to the clinic.
 
-### 8. ③ Clustering — find groups with no answer key
+### 8. ③ Clustering: find groups with no labels
 *figure: `cluster_heatmap.png`*
 
-Now HIDE the labels -- unsupervised. k-means sorted 20,000 cells into 6 piles knowing nothing. Let them read the heatmap and guess before the reveal: MPO = neutrophils, CD20 = B cells, CD3/CD4/CD8 = T cells, keratins = tumor. The punchline: classification COPIES labels you have; clustering DISCOVERS groups you don't. Same data, opposite philosophy.
+Now we hide the labels, which makes this unsupervised. k-means sorted 20,000 cells into 6 clusters knowing nothing about cell types. Let the students read the heatmap and name each cluster before the reveal: MPO marks neutrophils, CD20 marks B cells, CD3, CD4 and CD8 mark T cells, and the keratins mark tumor cells. The point to make is that classification reproduces labels you already have, while clustering discovers groups you did not know were there. Same data, opposite starting point.
 
-### 9. ④ Dimensionality reduction — draw a map
+### 9. ④ Dimensionality reduction: draw a map
 *figure: `pca.png`*
 
-Still unsupervised. Each cell is 16 numbers; PCA squashes them to 2 so every cell becomes a dot on a map. Tumor and immune land in different regions -- and the colors were painted on AFTER, never used to build the map. The structure was already in the numbers. (UMAP is the fancier version they'll see in papers.)
+This is also unsupervised. Each cell is 16 numbers, which is a point in 16-dimensional space that we cannot picture. PCA squashes those 16 numbers down to 2 while keeping the most important information, so every cell becomes a dot on a map. Tumor and immune cells land in different regions, and we add the colors afterward, so they were never used to build the map. The structure was already in the numbers. UMAP is a fancier version of the same idea that the students will run into in papers.
 
-### 10. ⑤ Capstone: which cells? Doesn't matter.
+### 10. ⑤ Capstone: does composition predict survival?
 *figure: `km_composition_null.png`*
 
-Now we USE the toolkit on the real question. First an honest failure. Cluster patients by WHICH cells they have, then look at survival: the lines sit on top of each other, p = 0.18. Composition tells us nothing. Say plainly -- a negative result is a real result, and it's a clue.
+Now we use the toolkit on the real research question. We start with a first feature, which is the mix of cell types each patient has. We cluster the patients on their cell composition and then look at survival. The two curves sit almost on top of each other and are not statistically different, so composition on its own tells us very little about survival. That is not a dead end, because it tells us we need a better feature, which sets up feature engineering on the next slides.
 
 ### 11. Same amount of immune cells, different layout
 *figure: `two_patients.png`*
 
-Both patients are ~50% immune -- printed right there. But left, the immune cells are walled off in their own territory; right, they're mixed through the tumor. Composition can't see this. Ask: how would you turn 'walled off vs mixed' into a single number?
+Both of these patients have about half immune cells, which is printed on each panel, so the difference is where those immune cells sit. On the left they are walled off in their own territory, and on the right they are mixed all through the tumor. Cell composition cannot see this difference, because the counts are the same. Ask the students how they might turn walled-off versus mixed into a single number, because that number is the feature we are about to engineer.
 
-### 12. Where the cells are — that DOES predict survival
+### 12. Feature engineering: where the cells are
 *figure: `km_mixing.png`*
 
-THE PAYOFF. We invented a feature -- the mixing score -- and fed it the same survival data. 5.2x the risk of dying, p = 0.032, and it matches the paper's published labels 33/33. Which cells you have: nothing. Where they are: everything. The four kinds are the tools; the art is feeding them the right number. Pause here.
+This is the payoff. We engineered a new feature called the mixing score, which measures how much the immune and tumor cells touch each other, and we fed it the same survival data. Patients whose immune cells were mixed into the tumor did much worse, with about 5 times the risk of dying, and the split matches the paper's published labels for all 33 scoreable patients. The lesson is that the four kinds of machine learning are the tools, and the skill is engineering the right feature to give them. We could not have found this second feature without the first one that failed.
 
-### 13. Part 2 — How do you get numbers out of a picture?
+### 13. Example 2: Bio-imaging
 > Every number we just used started as a photograph.
 
-Transition. All four vignettes assumed a tidy table. Somebody had to build that table from raw images.
+This is the transition to the second example. All four vignettes assumed a tidy table of numbers, but somebody had to build that table from raw microscope images, and that is the job of image analysis.
 
-### 14. Notebook 2 — run it yourself
-> Threshold → find centers → flood outwards
-> Three lines of math. No AI at all.
+### 14. Notebook 2: run it yourself
+> Watershed: threshold, find the centers, flood outwards.
+> Three lines of math, and no AI at all.
 
-They can run this one too. Threshold: bright = cell. Distance transform: find each blob's middle. Watershed: pour water from each center until the floods meet. Classic image processing, no neural net.
+The students can run this one as well. The watershed method has a nice analogy: imagine each cell is a bathtub with its own shape, and we fill all the tubs with water at the same time, stopping just before they overflow, so the rising water traces the edges. In code it is three steps: threshold the bright pixels as cells, find the center of each blob, and flood outward from those centers until the floods meet. There is no neural network here, just classical image processing.
 
 ### 15. On easy cells, it works
 *figure: `watershed_easy.png`*
 
-158 cells really there, ~177 found, 72% of outlines right. Old-fashioned math, no AI, works fine on tidy cells. Now the real thing.
+On tidy, well-separated cells the classical method works well. There are 158 cells actually present, it finds about 177, and roughly 72 percent of the outlines are right. Old-fashioned math with no AI does the job here. Then we try it on real tissue.
 
-### 16. On real tissue, it falls apart
+### 16. On real tissue, watershed struggles
 *figure: `watershed_hard.png`*
 
-Same code, real densely-packed tumor. Look at the big merged blobs -- it glued neighbors together. Roughly the right COUNT, but the SHAPES are wrong, and every measurement from a wrong shape is wrong too. THIS earns the next slide.
+This is the same code on a real, densely packed tumor. Look at the big merged blobs, where the method glued neighboring cells together. It gets roughly the right count, but the shapes are wrong, and a wrong shape means protein gets attributed to the wrong cell. That error trickles down through the whole analysis, and we would not be able to recover the spatial feature from the first example. This is what motivates the next slide.
 
 ### 17. So they used a neural network
-> Trained on thousands of hand-drawn cell outlines.
-> It learned what a cell boundary looks like.
-> Every one of the 200,000 outlines you used came from that model.
-> Same idea as: face unlock · reading a check · tumor outlines for radiotherapy
+> The scientists trained a neural network on thousands of
+> hand-drawn cell outlines, until it learned what a cell
+> boundary looks like.
+> It drew every one of the 200,000 outlines in our data.
+> The same idea shows up in self-driving cars, radiation-therapy
+> outlines, and satellite maps of forests.
 
-Land it: we didn't start with deep learning, we EARNED it -- the simple method broke, so they needed something that learns boundaries from examples. That is itself supervised classification, run once per pixel. Give a familiar example or two and move on; don't rabbit-hole on CNNs.
+The takeaway is that we did not start with deep learning, we arrived at it because the simple method broke. Real tissue needed something that could learn what a boundary looks like from many examples, and that is a neural network. Segmentation like this is really just classification run once for every pixel. Give the students a familiar example or two, such as self-driving cars or outlining tumors for radiation therapy, and then move on without going deep into how neural networks work.
 
-### 18. Part 3 — What is actually inside ChatGPT?
-> A different tool. Let's take one apart.
+### 18. Example 3: Deep learning and language models
+> What is actually inside ChatGPT? Let's take one apart.
 
-Hard reset. This is a separate tool from the ML we just did, not a bigger version of it. Switching topics.
+This is a hard reset to the third example. Make it clear that a language model is a different kind of tool from the machine learning we just did, and not simply a bigger version of it. A large language model is a neural network built from a huge number of connected units called neurons, sometimes billions of them.
 
 ### 19. It starts with one neuron
 *figure: `neuron.png`*
 
-Multiply each input by a weight, add them up, squash to a yes/no. That's the whole unit. In notebook 3 they train one in ~10 lines to spot immune cells -- and notice, that's a tiny CLASSIFIER, the same job as vignette 1. A language model is this, ~100 billion times over.
+A single neuron does three things: it multiplies each input by a weight, adds the results together, and squashes the total into a yes-or-no answer. That is the whole unit. In notebook 3 the students train one neuron in about ten lines to spot immune cells, which is really a tiny classifier doing the same job as the first example. A language model is this same idea repeated an enormous number of times, with billions of these weights, which we call parameters.
 
 ### 20. A model cannot read letters
 *figure: `tokens.png`*
 
-Text is chopped into tokens, each token becomes a number. Have them run their OWN NAME through it in the notebook -- always gets a reaction. Note 1847362 becomes 18/47/362, which is genuinely why these models fumble arithmetic and letter-counting.
+A model cannot read letters directly. Text is first chopped into pieces called tokens, and each token becomes a number. Have the students run their own name through the tokenizer in the notebook, which always gets a reaction. Point out that a number like 1847362 gets split into 18, 47 and 362, which is a real reason these models struggle with arithmetic and with counting the letters in a word.
 
-### 21. All it does is guess the next word
+### 21. It guesses the next token in a sequence
 *figure: `next_token.png`*
 
-THE key LLM slide. Real GPT-2 on their laptop: 94.6% sure the next word is 'cancer'. To write, it picks one, appends it, asks again. That's all writing is for a language model. (Notice: guess the next word out of 50,000 options is just... classification with 50,000 categories.)
+This is the key idea for language models. The real GPT-2 model is running on their laptop, and here it is about 95 percent sure the next token after 'diagnosed with breast' is 'cancer'. To write a sentence, it picks a token, adds it to the end, and asks the same question again. Notice that guessing the next token out of about 50,000 options is really just classification with 50,000 categories, which ties back to the first example.
 
 ### 22. Temperature: it re-weights, it does not delete
 *figure: `temperature_mechanism.png`*
 
-The knob students always ask about. The raw scores get DIVIDED by the temperature before becoming probabilities. Small (<1): gaps grow, the favorite wins more -- 'man' 45% -> 77%. Big (>1): gaps shrink, long shots get a chance -- down to 28%. Same seven words the whole time; nothing is removed. (What DOES remove words is top-k / top-p -- a different knob.)
+This is the knob students always ask about. To add some randomness, the model divides its scores by a number called the temperature before turning them into probabilities. A temperature below 1 stretches the gaps, so the favorite token wins more often, and 'man' goes from 45 percent up to 77 percent. A temperature above 1 shrinks the gaps, so long-shot tokens get a real chance, and 'man' drops to 28 percent. The same seven tokens are on screen the whole time, so nothing is ever removed. The knob that actually removes tokens is a different one called top-k or top-p.
 
-### 23. Now hear the difference
+### 23. Turning up the temperature
 *figure: `temperature_effect.png`*
 
-Same dial on the 2024 chat model (GPT-2 rambles even when cold). Low: fluent. Middle: fluent. High: word salad. THEN THE REAL POINT: read the first two answers aloud -- both confident, BOTH WRONG (the sky is blue from Rayleigh scattering; answer one literally says 'white or gray'). Nothing in the model was checking. A confident sentence is just a LIKELY sentence. Most important thing they hear all hour -- don't rush it.
+This is the same dial on the newer 2024 chat model, which is coherent enough that the change is easy to see. At low temperature it is fluent, at medium it is still fluent, and at high temperature it collapses into word salad. Then make the real point: read the first two answers out loud, because both sound confident and both are wrong. The sky is blue because of Rayleigh scattering, and one answer even says the sky looks white or gray. Nothing in the model was checking whether the answer was true, because a confident sentence is just a likely sentence. This is the most useful idea the students will take away, so give it time.
 
 ### 24. How it keeps track of meaning
 *figure: `attention.png`*
 
-OPTIONAL / CUT FIRST. 'The nurse examined the patient because SHE was worried' -- who is she? Inside the model, 'she' literally looks back at 'nurse'. That's attention, the T in GPT. One head out of 144, picked because it shows the pattern cleanly.
+This slide is optional and the first thing to cut for time. In the sentence 'The nurse examined the patient because she was worried', who is she? Inside the model, the token 'she' looks back at 'nurse'. This looking-back is called attention, and it is the T in GPT. This is one attention head out of 144, chosen because it shows the pattern clearly.
 
 ### 25. The ladder
 > the neuron you built            3 numbers
 > GPT-2  (2019)                   124,000,000
 > the chatbot you used            500,000,000
 > ChatGPT / Claude                ~1,000,000,000,000
-> Same three operations all the way up: multiply, add, squash.
+> The same three operations all the way up: multiply, add, and squash.
 
-Close part 3. The jump from 3 to a trillion is the only 'wow' needed. Nothing new appears at the top -- same arithmetic, repeated.
+This closes the language-model section. The only thing that needs to land is the jump from 3 numbers to about a trillion. Nothing new appears at the top of the ladder, because it is the same arithmetic repeated an enormous number of times.
 
 ### 26. What you did today
-> Met all four kinds of machine learning — and used each one.
-> Invented a feature that predicts survival.
-> Broke a classic algorithm, and saw why deep learning exists.
-> Ran a real language model and watched it guess.
-> All in Python. All free. All yours to keep.
+> You met all four kinds of machine learning, and used each one.
+> You engineered a feature that predicts survival.
+> You broke a classic algorithm, and saw why deep learning exists.
+> You ran a real language model and watched it guess.
+> All in Python, all free, and all yours to keep.
 
-End on what THEY did. The notebooks stay theirs -- point at the 🎛️ Try it boxes and the stretch bits at the bottom of each. Take questions.
+End on what the students did, not on the tools. The notebooks stay theirs, so point them to the Try it boxes and the extra ideas at the bottom of each one, including asking the chatbot how many R's are in the word strawberry. Then take questions.
